@@ -62,6 +62,6 @@ model.add(Dense(1))
 
 model.compile(loss='mse', optimizer='adam')
 
-model.fit(X_train, y_train, validation_split=0.1, shuffle=True, nb_epoch=5)
+model.fit(X_train, y_train, validation_split=0.1, shuffle=True, nb_epoch=10)
 
-model.save('../m1-sm.h5')
+model.save('../m1-sm-1and2.h5')
