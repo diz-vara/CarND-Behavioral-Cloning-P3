@@ -16,7 +16,9 @@ import sklearn
     
 
 dataDirs = ['/media/D/DIZ/CarND/P3/tr21', '/media/D/DIZ/CarND/P3/tr22',
-            '/media/D/DIZ/CarND/P3/tr23', '/media/D/DIZ/CarND/P3/tr12',
+            '/media/D/DIZ/CarND/P3/tr23', 
+            '/media/D/DIZ/CarND/P3/tr12',
+            '/media/D/DIZ/CarND/P3/tr24', #(tr2 - reverse)
             '/media/D/DIZ/CarND/P3/tr25',
             '/media/D/DIZ/CarND/P3/tr10', '/media/D/DIZ/CarND/P3/tr11']
 
@@ -40,10 +42,10 @@ for dataDir in dataDirs:
     
             samples.append(line);
 
-        
-trn_smpl, val_smpl = train_test_split(samples, test_size=0.15);
+sklearn.utils.shuffle(samples)       
+trn_smpl, val_smpl = train_test_split(samples, test_size=0.2);
 
-correction = 0.15; 
+correction = 0.13; 
 corrections = [0, correction, correction *-1.];
 
 def generator(samples, batchSize = 32):
