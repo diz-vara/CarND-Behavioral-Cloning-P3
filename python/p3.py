@@ -12,8 +12,10 @@ import cv2
 from keras.backend import tf as ktf
     
 
-dataDirs = ['/media/D/DIZ/CarND/P3/tr2', '/media/D/DIZ/CarND/P3/track2', '/media/D/DIZ/CarND/P3/tr21',
-            '/media/D/DIZ/CarND/P3/t1', '/media/D/DIZ/CarND/P3/t2']
+dataDirs = ['/media/D/DIZ/CarND/P3/tr20', '/media/D/DIZ/CarND/P3/tr21', '/media/D/DIZ/CarND/P3/tr22',
+            '/media/D/DIZ/CarND/P3/tr23', '/media/D/DIZ/CarND/P3/tr12',
+            '/media/D/DIZ/CarND/P3/tr25',
+            '/media/D/DIZ/CarND/P3/tr10', '/media/D/DIZ/CarND/P3/tr11']
 #'/media/D/DIZ/CarND/P3/track2' 
 
 def newPath(file):
@@ -22,7 +24,6 @@ def newPath(file):
 
 
 
-ktf.GPUOptions(per_process_gpu_memory_fraction = 0.5)
         
 images = []
 angles = []

@@ -43,7 +43,7 @@ for dataDir in dataDirs:
         
 trn_smpl, val_smpl = train_test_split(samples, test_size=0.15);
 
-correction = 0.13; 
+correction = 0.15; 
 corrections = [0, correction, correction *-1.];
 
 def generator(samples, batchSize = 32):
