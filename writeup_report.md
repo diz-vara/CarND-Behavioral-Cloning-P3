@@ -62,25 +62,26 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 8 and 64 (model.py lines 36-60) followed by two fully-connected ('Dense') layers with 100
+My model consists of a convolution neural network with 3x3 filter sizes and depths between 8 and 64 (model.py lines 121-145) followed by two fully-connected ('Dense') layers with 100
 and 50 units respectively. 
 
-The model includes RELU layers to introduce nonlinearity on two first convolutional layers and PReLU (ReLU with lernable parameter of the negative slope) on other layers.
+The model includes RELU layers to introduce nonlinearity on two first convolutional layers and PReLU (ReLU with learnable parameter of the negative slope) on other layers.
 
 #### 2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in fully-connected layers to reduce overfitting (model.py, lines 65 and 69). 
+The model contains dropout layers in fully-connected layers to reduce overfitting (model.py, lines 150 and 154). 
 
 The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
 
 #### 3. Model parameter tuning
 
+The model used an adam optimizer, with light weight decay (1e-7): it give slightly better results.
 
 #### 4. Appropriate training data
 
 Training data was chosen to keep the vehicle driving on the road. 
 I used a combination of center lane driving, driving from opposite directions and recovering from the  sides of the road.
-My appoach to training data creation I describe further.
+My approach to training data creation I describe further.
 
 
 
@@ -88,10 +89,10 @@ My appoach to training data creation I describe further.
 
 #### 1. Solution Design Approach
 
-I've decided to start with a simple and straighforward model. So, I constructed the convolution
-network consisting of sequence of 3x3 convoulutions with PReLU activations, BatchNormalizations
+I've decided to start with a simple and straightforward model. So, I constructed the convolution
+network consisting of sequence of 3x3 convolutions with PReLU activations, BatchNormalizations
 and MaxPooling layers with moderate increase of number of features.
-Originally, I planned to play with more sofisticated models at the end, but it appeared
+Originally, I planned to play with more sophisticated models at the end, but it appeared
 that this model works, and I only simplified it a little bit (removed one layer after
 reducing the image size and replaced two first PReLU activations by simple ReLUs to
 decrease the number of trained parameters).
@@ -101,8 +102,8 @@ decrease the number of trained parameters).
 
 The final model architecture (model.py lines 36-70) consisted of a convolution neural network with 
 4 convolutional hyper-layers consisting of convolution, batch normalization, ReLU (or PReLU) and
-MaxPooling layers. In fierst hyper-layer, I replaced one 5x5 convolution with two consecutive 3x3 
-convlutions.
+MaxPooling layers. In first hyper-layer, I replaced one 5x5 convolution with two consecutive 3x3 
+convolutions.
 
 
 +--------------------+--------------------------+--------------+
@@ -179,14 +180,16 @@ Total params: 176,159
 Trainable params: 175,671
 Non-trainable params: 488
 
-Here is the graphical represenation of the model (it took a huge amount of time to create, but the solution was simple: replace obsolete
+You can see, that this model has only 175 thousand trainable parameters (comparing to  250 thousand in Nvidia model)
+
+Here is the graphical representation of the model (it took a huge amount of time to create, but the solution was simple: replace obsolete
 pydot2 with pydot3)
 
 ![alt text][model]
 
 The model used an adam optimizer, with light weight decay (1e-7): it give slightly better results.
 
-Model were trained for 7 epochs, as validation loss usually stopped to decrease afther this moment.
+Model were trained for 7 epochs, as validation loss usually stopped to decrease after this moment.
 
 
 #### 3. Creation of the Training Set & Training Process
@@ -204,11 +207,11 @@ Here is an example of image flipping:
 ![alt text][normal]
 ![alt text][flipped]
 
-Being tested in the autonomouse mode, car reached the bridge - but left the track on the first turn after.
+Being tested in the autonomous mode, car reached the bridge - but left the track on the first turn after.
 
-Then I added  several recordings of the 'smooth' passing of difficult corneds - and recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn
+Then I added several recordings of the 'smooth' passing of difficult turns - and recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn
 how to return to the center in case it goes slightly off.
-Here are trhee frames from 'recovery' track.
+Here are three frames from 'recovery' track.
 
 ![alt text][recov0]
 ![alt text][recov2]
@@ -232,16 +235,19 @@ When I tried to use trained model on the second track, the result was... No good
 to pass this track (and record two laps) - it appeared that model, trained on both tracks, can drive both of them! - On maximal speed (30 mph) on 
 track1, and at the speed up to 10 mph on the second track.
 
-At that point dataset consisted of 20464 'waypoints' (122784 images after augmentation);
+[track1] (https://github.com/diz-vara/CarND-P3/blob/master/track1.mp4) 
+
+At that point dataset consisted of 20464 'way-points' (122784 images after augmentation);
 
 Then I simplified things a little bit: I scaled the image from original 160x320 to 80x160 - and removed one 'hyper-layer' from the network.
-It reduced the size of the model - but did not affect the result: it still succeded on both tracks.
+It reduced the size of the model - but did not affect the result: it still succeeded on both tracks.
 
-Up to this point, I didn't 'generator' tecnique: due to the small size of the image, entire dataset
+Up to this point, I didn't use 'generator' technique: due to the small size of the image, entire dataset
 fitted in TitanX memory. But, as in real life I deal with a large images, I decided to take a try.
 
 In 'generator' model, image cropping, resizing and normalization were moved from the model to the
-generato function - and the same changes were made in **drive.py** file. 
+generator function - and the same changes
+ were made in **drive.py** file. 
 
 New model worked on track1 not so good (car swayed on straight parts of the track) - but still
 passable. But it couldn't drive on track2, going off the road on one or another (depending on
@@ -249,10 +255,10 @@ speed and initial conditions) point.
 I've added more track2 recordings (one more circle + two laps in opposite directions) - but it did
 not improve the situation.
 
-What is the matter?
+*What is the matter?**
 
 I think, the answer is very simple.
-Without 'generator', I generated augmenterd data first, and it consisted of (N * 6) samples.
+Without 'generator', I generated augmented data first, and it consisted of (N * 6) samples.
 When I took 80% of these into the training data, the probability of any original point (or one of its
 clones) to be presented in the training set, is very high.
 
@@ -261,10 +267,11 @@ and the model really never see it.
 
 
 Finally, I want to say it would be nice to have one additional 'test' track - as simple as the 
-first one, but not accessible for training. The it would be a chanse to see if our model really 
-learns to *generalize* - or it just tryes to memorize all it see.
+first one, but not accessible for training. The it would be a chance to see if our model really 
+learns to *generalize* - or it just tries to memorize all it see.
 
   
  
+
 
 
