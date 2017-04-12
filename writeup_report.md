@@ -15,13 +15,16 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[model]: ./model.png "Model Visualization"
+[recov0]: ./examples/recov_0.jpg "Recovery Image"
+[recov1]: ./examples/recov_10.jpg "Recovery Image"
+[recov2]: ./examples/recov_20.jpg "Recovery Image"
+[recov3]: ./examples/recov_30.jpg "Recovery Image"
+[normal]: ./examples/ex_0_orig.jpg "Normal Image"
+[flipped]: ./examples/ex_0_mirror.jpg "Flipped Image"
+[cropped]: ./examples/ex_0_crop.png "Flipped Image"
+
+[track1]: ./track1.mp4 "Flipped Image"
 
 ## Rubric Points
 ### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
@@ -72,11 +75,12 @@ The model was trained and validated on different data sets to ensure that the mo
 
 #### 3. Model parameter tuning
 
-The model used an adam optimizer, with light weight decay (1e-7): it give slightly better results.
 
-####4. Appropriate training data
+#### 4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, driving from opposite directions and recovering from the  sides of the road ... 
+Training data was chosen to keep the vehicle driving on the road. 
+I used a combination of center lane driving, driving from opposite directions and recovering from the  sides of the road.
+My appoach to training data creation I describe further.
 
 
 
@@ -84,19 +88,14 @@ Training data was chosen to keep the vehicle driving on the road. I used a combi
 
 #### 1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+I've decided to start with a simple and straighforward model. So, I constructed the convolution
+network consisting of sequence of 3x3 convoulutions with PReLU activations, BatchNormalizations
+and MaxPooling layers with moderate increase of number of features.
+Originally, I planned to play with more sofisticated models at the end, but it appeared
+that this model works, and I only simplified it a little bit (removed one layer after
+reducing the image size and replaced two first PReLU activations by simple ReLUs to
+decrease the number of trained parameters).
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
-
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
-
-To combat the overfitting, I modified the model so that ...
-
-Then I ... 
-
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
-
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
 #### 2. Final Model Architecture
 
@@ -105,7 +104,6 @@ The final model architecture (model.py lines 36-70) consisted of a convolution n
 MaxPooling layers. In fierst hyper-layer, I replaced one 5x5 convolution with two consecutive 3x3 
 convlutions.
 
-the following layers and layer sizes ...
 
 +--------------------+--------------------------+--------------+
 | Layer (type)       |  Output Shape            | #params
@@ -181,34 +179,92 @@ Total params: 176,159
 Trainable params: 175,671
 Non-trainable params: 488
 
+Here is the graphical represenation of the model (it took a huge amount of time to create, but the solution was simple: replace obsolete
+pydot2 with pydot3)
+
+![alt text][model]
+
+The model used an adam optimizer, with light weight decay (1e-7): it give slightly better results.
+
+Model were trained for 7 epochs, as validation loss usually stopped to decrease afther this moment.
 
 
-![alt text][image1]
+#### 3. Creation of the Training Set & Training Process
 
-####3. Creation of the Training Set & Training Process
+Dataset creation was the most time-consuming part of the project (but it is true for all real projects: to get good results, you 
+need **a lot** of data).
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+In my data collection, I followed instructions from the lesson: first, I recorded two laps on track one using center lane driving. Here is an example: 
 
-![alt text][image2]
+![alt text][normal]
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+Then I added one lap in the opposite (clock-wize) direction - and 'augmented' the data by flipping the image (and inverting the value of the angle).
+Here is an example of image flipping:
 
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
+![alt text][normal]
+![alt text][flipped]
 
-Then I repeated this process on track two in order to get more data points.
+Being tested in the autonomouse mode, car reached the bridge - but left the track on the first turn after.
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+Then I added  several recordings of the 'smooth' passing of difficult corneds - and recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn
+how to return to the center in case it goes slightly off.
+Here are trhee frames from 'recovery' track.
 
-![alt text][image6]
-![alt text][image7]
+![alt text][recov0]
+![alt text][recov2]
+![alt text][recov3]
 
-Etc ....
+In addition, I added images from left and right cameras to the analysis, adjusting steering angle by the value of 0.15.
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+'Autonomous' car behaved better - but didn't reach the finish.
+
+Then I cropped the image (cutting off 60 lines from the top and 20 lines from the bottom):
+
+![alt text][cropped] 
+-- and car **finished the first track!**
+
+[track1] (https://github.com/diz-vara/CarND-P3/blob/master/track1.mp4) 
+
+At that point, data consisted of 13677 original samples, with additional cameras and mirroring it gave total of  82062 images, 65450 (80%) of them
+were used for training, and 16412 (20%) - for validation.
+
+When I tried to use trained model on the second track, the result was... No good, as you can imaging. But when, after several attempts, I've managed
+to pass this track (and record two laps) - it appeared that model, trained on both tracks, can drive both of them! - On maximal speed (30 mph) on 
+track1, and at the speed up to 10 mph on the second track.
+
+At that point dataset consisted of 20464 'waypoints' (122784 images after augmentation);
+
+Then I simplified things a little bit: I scaled the image from original 160x320 to 80x160 - and removed one 'hyper-layer' from the network.
+It reduced the size of the model - but did not affect the result: it still succeded on both tracks.
+
+Up to this point, I didn't 'generator' tecnique: due to the small size of the image, entire dataset
+fitted in TitanX memory. But, as in real life I deal with a large images, I decided to take a try.
+
+In 'generator' model, image cropping, resizing and normalization were moved from the model to the
+generato function - and the same changes were made in **drive.py** file. 
+
+New model worked on track1 not so good (car swayed on straight parts of the track) - but still
+passable. But it couldn't drive on track2, going off the road on one or another (depending on
+speed and initial conditions) point.
+I've added more track2 recordings (one more circle + two laps in opposite directions) - but it did
+not improve the situation.
+
+What is the matter?
+
+I think, the answer is very simple.
+Without 'generator', I generated augmenterd data first, and it consisted of (N * 6) samples.
+When I took 80% of these into the training data, the probability of any original point (or one of its
+clones) to be presented in the training set, is very high.
+
+On the other point, in 'generator' model I 'cut off' 20% of the data **before** augmentation,
+and the model really never see it.
 
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+Finally, I want to say it would be nice to have one additional 'test' track - as simple as the 
+first one, but not accessible for training. The it would be a chanse to see if our model really 
+learns to *generalize* - or it just tryes to memorize all it see.
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+  
+ 
+
+
